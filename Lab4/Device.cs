@@ -13,6 +13,7 @@ namespace Lab4
         double mu;
         public Device(double _mu, CustomQueue queue) 
         {
+
             this.mu = _mu;
             resetEvent = new AutoResetEvent(true);
             this.queue = queue;

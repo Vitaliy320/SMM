@@ -7,29 +7,23 @@ using System.Threading.Tasks;
 
 namespace Lab4
 {
+    public delegate void NextAction(Customer customer);
+
     public class Device : ControllerBase
     {
+
+        public NextAction NextAction;
+
         CustomQueue queue;
         double mu;
-        public Device(double _mu, CustomQueue queue) 
+        public Device(double _mu, CustomQueue queue, NextAction action) 
         {
-
+            NextAction = action;
             this.mu = _mu;
             resetEvent = new AutoResetEvent(true);
             this.queue = queue;
         }
 
-        public void SetResetEvent(bool busy) 
-        {
-            if (busy)
-            {
-                resetEvent.WaitOne();
-            }
-            else
-            {
-                resetEvent.Set();
-            }
-        }
         public int Process(Customer customer) 
         {
             int time = (int)(1.0 / mu * 1000);
@@ -37,7 +31,7 @@ namespace Lab4
             return time;
         }
 
-        public async Task ExecuteAsync(CancellationToken stoppingToken)
+        public void ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -46,7 +40,7 @@ namespace Lab4
                 int time = Process(customer);
                 Thread.Sleep(time);
 
-                //await do next
+                NextAction(customer);
             }
         }
 

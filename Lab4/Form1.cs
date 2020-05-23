@@ -14,17 +14,23 @@ namespace Lab4
 {
     public partial class Form1 : Form
     {
+
+        Source source;
         public Form1()
         {
             InitializeComponent();
+
+            source = new Source();
         }
 
-        private void buttonStart_Click(object sender, EventArgs e)
+        private async void buttonStart_Click(object sender, EventArgs e)
         {
-          
+            await Start();
         }
 
-        
-
+        private async Task Start()
+        {
+            await source.ExecuteAsync(new CancellationToken(false));
+        }
     }
 }

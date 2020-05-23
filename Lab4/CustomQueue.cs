@@ -15,13 +15,12 @@ namespace Lab4
         public bool HasLimit { get; }
         int limit;
 
-        public event EventHandler queueHandler;
         public CustomQueue()
         {
             _reachedLimit = false;
             HasLimit = false;
             customersList = new Queue<Customer>();
-            resetEvent = new System.Threading.AutoResetEvent(true);
+            resetEvent = new System.Threading.AutoResetEvent(false);
         }
 
         public CustomQueue(int limit)
@@ -29,28 +28,39 @@ namespace Lab4
             _reachedLimit = false;
             this.limit = limit;
             HasLimit = true;
+            customersList = new Queue<Customer>();
+            resetEvent = new System.Threading.AutoResetEvent(false);
         }
         public Customer FirstCustomerOfQueue() 
         {
+            if(customersList.Count <= 0)
+            {
+                resetEvent.WaitOne();
+            }
+
             if (_reachedLimit)
             {
                 resetEvent.Set();
-                queueHandler?.Invoke(this, new QueueEventArgs { Busy = false });
+              
             }
             return customersList.Dequeue();
         }
-        public void moveToQueue(Customer customer)
+        public  void MoveToQueue(Customer customer)
         {
             if (HasLimit)
             {
-                if(customersList.Count > limit)
+                if(customersList.Count >= limit)
                 {
                     _reachedLimit = true;
-                    queueHandler?.Invoke(this, new QueueEventArgs { Busy = true });
                     resetEvent.WaitOne();
                 }
             }
+
             customersList.Enqueue(customer);
+            if (customersList.Count == 1)
+            {
+                resetEvent.Set();
+            }
         }
     }
 }

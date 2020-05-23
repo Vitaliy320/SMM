@@ -30,10 +30,24 @@ namespace Lab4
                 resetEvent.Set();
             }
         }
-        public void process(Customer customer) 
+        public int Process(Customer customer) 
         {
             int time = (int)(1.0 / mu * 1000);
-            Thread.Sleep(time);
+
+            return time;
+        }
+
+        public async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                var customer = queue.FirstCustomerOfQueue();
+
+                int time = Process(customer);
+                Thread.Sleep(time);
+
+                //await do next
+            }
         }
 
     }

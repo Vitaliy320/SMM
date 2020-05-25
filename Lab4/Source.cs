@@ -26,16 +26,22 @@ namespace Lab4
         {
             servedCustomers = new List<Customer>();
 
-            queue1 = new CustomQueue(Settings.QUEUE_1_LIMIT);
-            queue2 = new CustomQueue(Settings.QUEUE_2_LIMIT);
+            queue1 = new CustomQueue("Queue1", Settings.QUEUE_1_LIMIT);
+            queue2 = new CustomQueue("Queue2", Settings.QUEUE_2_LIMIT);
 
-            helpQueue = new CustomQueue(1);
+            helpQueue = new CustomQueue("HelpQueue", 1);
 
-            device1 = new Device(Settings.DEVICE_1_MU, queue1, x => helpQueue.MoveToQueue(x), WorkMode.Intensity);
-            device2 = new Device(Settings.DEVICE_2_TIME, helpQueue, x => queue2.MoveToQueue(x), WorkMode.Time);
-            device3 = new Device(Settings.DEVICE_3_TIME, queue2, x => servedCustomers.Add(x), WorkMode.Time);
+            device1 = new Device("Device1", Settings.DEVICE_1_MU, queue1, x => helpQueue.MoveToQueue(x), WorkMode.Intensity);
+            device2 = new Device("Device2", Settings.DEVICE_2_TIME, helpQueue, x => queue2.MoveToQueue(x), WorkMode.Time);
+            device3 = new Device("Device3", Settings.DEVICE_3_TIME, queue2, x => 
+            { 
+                servedCustomers.Add(x);
+                x.WriteToFile("End Work");
+                x.CreateMessage("End Work");
+                x.WriteFinalMessage();
+            }, WorkMode.Time);
 
-            helpDevice = new Device(0, helpQueue, x => queue2.MoveToQueue(x), WorkMode.Time);
+            helpDevice = new Device("HelpDevice", 0, helpQueue, x => queue2.MoveToQueue(x), WorkMode.Time);
         }
         
         
@@ -51,7 +57,7 @@ namespace Lab4
             thread3.Name = "Device3";
 
             var thread4 = new Thread(() => helpDevice.ExecuteAsync(stoppingToken));
-            thread4.Name = "Help Device";
+            thread4.Name = "HelpDevice";
 
             thread1.Start();
             thread2.Start();
@@ -59,12 +65,18 @@ namespace Lab4
             thread4.Start();
 
             int delayTime = Settings.Delay;
+            int count = 0;
             while (!stoppingToken.IsCancellationRequested)
             {
-                Customer customer = new Customer();
+                Customer customer = new Customer($"Customer {count}");
+
+                customer.WriteToFile("Has been created");
+                customer.CreateMessage("Has been created");
+
                 queue1.MoveToQueue(customer);
 
                 Thread.Sleep(delayTime);
+                count++;
             }
         }
     }

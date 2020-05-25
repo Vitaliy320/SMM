@@ -12,16 +12,19 @@ namespace Lab4
     public class Device : ControllerBase
     {
 
-        public NextAction NextAction;
-
         CustomQueue queue;
 
         double value;
 
         WorkMode mode;
 
-        public Device(double value, CustomQueue queue, NextAction action, WorkMode mode) 
+        public NextAction NextAction;
+
+        public string Name { get; set; }
+
+        public Device(string name, double value, CustomQueue queue, NextAction action, WorkMode mode) 
         {
+            Name = name;
             NextAction = action;
             this.value = value;
             resetEvent = new AutoResetEvent(true);
@@ -49,6 +52,9 @@ namespace Lab4
             while (!stoppingToken.IsCancellationRequested)
             {
                 var customer = queue.FirstCustomerOfQueue();
+
+                customer.CreateMessage($"Processed by {Name}");
+                customer.WriteToFile($"Processed by, {Name}");
 
                 int time = Process(customer);
                 Thread.Sleep(time);

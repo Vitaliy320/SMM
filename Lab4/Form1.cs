@@ -23,14 +23,14 @@ namespace Lab4
             source = new Source();
         }
 
-        private async void buttonStart_Click(object sender, EventArgs e)
+        private void buttonStart_Click(object sender, EventArgs e)
         {
-            await Start();
+            new Thread(Start).Start();
         }
 
-        private async Task Start()
+        private void Start()
         {
-            await source.ExecuteAsync(new CancellationToken(false));
+            source.ExecuteAsync(new CancellationToken(false));
         }
     }
 }

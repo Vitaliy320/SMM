@@ -15,18 +15,31 @@ namespace Lab4
         public NextAction NextAction;
 
         CustomQueue queue;
-        double mu;
-        public Device(double _mu, CustomQueue queue, NextAction action) 
+
+        double value;
+
+        WorkMode mode;
+
+        public Device(double value, CustomQueue queue, NextAction action, WorkMode mode) 
         {
             NextAction = action;
-            this.mu = _mu;
+            this.value = value;
             resetEvent = new AutoResetEvent(true);
             this.queue = queue;
+            this.mode = mode;
         }
 
         public int Process(Customer customer) 
         {
-            int time = (int)(1.0 / mu * 1000);
+            int time = 0;
+            if(mode == WorkMode.Intensity)
+            {
+                time = (int)(1.0 / value * Settings.TimeMeasure);
+            }
+            else if(mode == WorkMode.Time)
+            {
+                time = (int)value;
+            }
 
             return time;
         }

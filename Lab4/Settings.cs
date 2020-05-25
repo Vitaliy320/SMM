@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,21 @@ namespace Lab4
 {
     public class Settings
     {
-        public int Delay => 1000;
-        public const double DEVICE_1_MU = 0.2, DEVICE_2_MU = 0.05, DEVICE_3_MU = 0.05;
+        public const int Delay = 1;
+
+        public const double DEVICE_1_MU = 0.23, 
+                            DEVICE_2_TIME = 5, 
+                            DEVICE_3_TIME = 10;
+
+        public const int QUEUE_1_LIMIT = 9,
+                         QUEUE_2_LIMIT = 3;
+
+        public const double TimeMeasure = 1;
+    }
+
+    public enum WorkMode
+    {
+        Intensity = 1,
+        Time = 2
     }
 }

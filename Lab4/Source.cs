@@ -10,36 +10,39 @@ namespace Lab4
 {
     public class Source
     {
-
-        Settings settings;
         CustomQueue queue1;
         CustomQueue queue2;
 
-        List<Customer> servedCustomers;
         Device device1;
         Device device2;
         Device device3;
-        private const int QUEUE_2_LIMIT = 10;
-        private const double DEVICE_1_MU = 0.2, DEVICE_2_MU = 0.05, DEVICE_3_MU = 0.05;
+
+        List<Customer> servedCustomers;
+
+        CustomQueue helpQueue;
+        Device helpDevice;
+
         public Source()
         {
             servedCustomers = new List<Customer>();
 
-            settings = new Settings();
-            queue1 = new CustomQueue();
-            queue2 = new CustomQueue(QUEUE_2_LIMIT);
-            device1 = new Device(DEVICE_1_MU, queue1,  x =>  queue2.MoveToQueue(x));
+            queue1 = new CustomQueue(Settings.QUEUE_1_LIMIT);
+            queue2 = new CustomQueue(Settings.QUEUE_2_LIMIT);
 
-            device2 = new Device(DEVICE_2_MU, queue2,  x => servedCustomers.Add(x));
-            device3 = new Device(DEVICE_3_MU, queue2,  x => servedCustomers.Add(x));
+            helpQueue = new CustomQueue(1);
+
+            device1 = new Device(Settings.DEVICE_1_MU, queue1, x => helpQueue.MoveToQueue(x), WorkMode.Intensity);
+            device2 = new Device(Settings.DEVICE_2_TIME, helpQueue, x => queue2.MoveToQueue(x), WorkMode.Time);
+            device3 = new Device(Settings.DEVICE_3_TIME, queue2, x => servedCustomers.Add(x), WorkMode.Time);
+
+            helpDevice = new Device(0, helpQueue, x => queue2.MoveToQueue(x), WorkMode.Time);
         }
         
         
-        public async Task ExecuteAsync(CancellationToken stoppingToken) 
+        public void ExecuteAsync(CancellationToken stoppingToken) 
         {
             var thread1 = new Thread(() => device1.ExecuteAsync(stoppingToken));
             thread1.Name = "Device1";
-
 
             var thread2 = new Thread(() => device2.ExecuteAsync(stoppingToken));
             thread2.Name = "Device2";
@@ -47,11 +50,15 @@ namespace Lab4
             var thread3 = new Thread(() => device3.ExecuteAsync(stoppingToken));
             thread3.Name = "Device3";
 
+            var thread4 = new Thread(() => helpDevice.ExecuteAsync(stoppingToken));
+            thread4.Name = "Help Device";
+
             thread1.Start();
             thread2.Start();
             thread3.Start();
+            thread4.Start();
 
-            int delayTime = settings.Delay;
+            int delayTime = Settings.Delay;
             while (!stoppingToken.IsCancellationRequested)
             {
                 Customer customer = new Customer();

@@ -40,6 +40,7 @@ namespace Lab4
 
             if (_reachedLimit)
             {
+                _reachedLimit = false;
                 resetEvent.Set();
               
             }
@@ -52,6 +53,7 @@ namespace Lab4
                 if(customersList.Count >= limit)
                 {
                     _reachedLimit = true;
+                    resetEvent.Reset();
                     resetEvent.WaitOne();
                 }
             }

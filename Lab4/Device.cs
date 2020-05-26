@@ -12,21 +12,37 @@ namespace Lab4
     public class Device : ControllerBase
     {
 
+        CustomQueue queue;
+
+        double value;
+
+        WorkMode mode;
+
         public NextAction NextAction;
 
-        CustomQueue queue;
-        double mu;
-        public Device(double _mu, CustomQueue queue, NextAction action) 
+        public string Name { get; set; }
+
+        public Device(string name, double value, CustomQueue queue, NextAction action, WorkMode mode) 
         {
+            Name = name;
             NextAction = action;
-            this.mu = _mu;
+            this.value = value;
             resetEvent = new AutoResetEvent(true);
             this.queue = queue;
+            this.mode = mode;
         }
 
         public int Process(Customer customer) 
         {
-            int time = (int)(1.0 / mu * 1000);
+            int time = 0;
+            if(mode == WorkMode.Intensity)
+            {
+                time = (int)(1.0 / value * Settings.TimeMeasure);
+            }
+            else if(mode == WorkMode.Time)
+            {
+                time = (int)value;
+            }
 
             return time;
         }
@@ -36,6 +52,9 @@ namespace Lab4
             while (!stoppingToken.IsCancellationRequested)
             {
                 var customer = queue.FirstCustomerOfQueue();
+
+                customer.CreateMessage($"Processed by {Name}");
+                customer.WriteToFile($"Processed by, {Name}");
 
                 int time = Process(customer);
                 Thread.Sleep(time);
